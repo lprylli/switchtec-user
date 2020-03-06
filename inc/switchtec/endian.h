@@ -30,6 +30,8 @@
 #if defined(__linux__)
 # include <endian.h>
 
+#elif defined(__FreeBSD__)
+# include <sys/endian.h>
 #elif defined(__WINDOWS__)
 # include <winsock2.h>
 # include <sys/param.h>

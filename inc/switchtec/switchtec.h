@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <limits.h>
 
 #ifdef __cplusplus
 extern "C" {

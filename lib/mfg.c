@@ -39,6 +39,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef __FreeBSD__
+#include <sys/endian.h>
+#endif
 
 #include "lib/crc.h"
 #include "config.h"
