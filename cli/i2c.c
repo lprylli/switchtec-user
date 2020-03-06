@@ -78,6 +78,7 @@ static int i2c_read(int argc, char **argv)
 		if (i % 16 == 15)
 			printf("\n");
 	}
+	printf("\n");
 	return 0;
 }
 
