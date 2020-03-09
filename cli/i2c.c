@@ -48,7 +48,7 @@ static int i2c_read(int argc, char **argv)
 		{"slave", 's', "VAL", CFG_INT, &cfg.slave, required_argument,
 		 "i2c slave address (7bit) to access "},
 		{"offset", 'o', "VAL", CFG_INT, &cfg.offset, required_argument,
-		 "i2c slave address (7bit) to access "},
+		 "cmd/offset in slave address space "},
 		{"count", 'n', "NUM", CFG_INT, &cfg.count, required_argument,
 		 "number of bytes to read (default is 1)"},
 		{NULL}};
@@ -83,8 +83,74 @@ static int i2c_read(int argc, char **argv)
 }
 
 
+#define CMD_DESC_WRITE "i2c write -p <port> -s <slave(7bit)> -o <off> <nbytes>"
+
+static int i2c_write(int argc, char **argv)
+{
+  int count;
+	struct {
+		uint8_t cmd;
+		uint8_t port;
+		uint16_t slave;
+		//
+		uint32_t offset;
+		//
+		uint16_t nb_bytes;
+		uint8_t addr_size;
+		uint8_t off_size;
+	  //
+  	  uint8_t bytes[128];
+	} input = {.cmd = 1, .addr_size = 0, .off_size = 1};
+
+	static struct {
+		struct switchtec_dev *dev;
+		int port;
+		int slave;
+		int offset;
+		int count;
+	} cfg = { .count = 1 };
+	const struct argconfig_options opts[] = {
+		DEVICE_OPTION,
+		{"port", 'p', "VAL", CFG_INT, &cfg.port, required_argument,
+		 "TWI port to use "},
+		{"slave", 's', "VAL", CFG_INT, &cfg.slave, required_argument,
+		 "i2c slave address (7bit) to access "},
+		{"offset", 'o', "VAL", CFG_INT, &cfg.offset, required_argument,
+		 "offset/cmd in slave address-space "},
+		{NULL}};
+
+	argconfig_parse(argc, argv, CMD_DESC_WRITE, opts, &cfg, sizeof(cfg));
+
+	count = argc - optind;
+	input.port = cfg.port;
+	input.slave = cfg.slave * 2;
+	input.offset = cfg.offset;
+	input.nb_bytes = count;
+
+	if (count > 128) {
+		fprintf(stderr, "max bytes = 128, requested = %d\n", input.nb_bytes);
+		exit(1);
+	}
+	for (int i = 0;i < count;i++) {
+	  input.bytes[i] = strtoul(argv[i+optind], NULL, 0);
+	}
+		
+	int rc = switchtec_cmd(cfg.dev, MRPC_TWI, &input, sizeof(input),
+			       NULL, 0);
+
+	if (rc) {
+		switchtec_perror("i2c_write");
+		return rc;
+	}
+
+	return 0;
+}
+
+
 static const struct cmd commands[] = {
 	{"read", i2c_read, CMD_DESC_READ},
+	{"write", i2c_write, CMD_DESC_WRITE},
+	
 	{}
 };
 
@@ -92,7 +158,7 @@ static struct subcommand subcmd = {
 	.name = "i2c",
 	.cmds = commands,
 	.desc = "I2C interface",
-	.long_desc = "Read/Write i2c, slave-size = 1 byte, offset-size = 1 byte",
+	.long_desc = "Read/Write twi/i2c, slave-size = 1 byte, offset-size = 1 byte",
 };
 
 REGISTER_SUBCMD(subcmd);
