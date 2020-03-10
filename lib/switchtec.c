@@ -809,6 +809,7 @@ int switchtec_get_device_info(struct switchtec_dev *dev,
 	ret = switchtec_cmd(dev, MRPC_GET_DEV_INFO, &ping_dw,
 			    sizeof(ping_dw),
 			    &reply, sizeof(reply));
+	fprintf(stderr, "get_dev_info:pax=0x%x, ret=%d, errnor=%d\n", dev->pax_id, ret, errno);
 	if (ret == 0) {
 		if (ping_dw != ~reply.ping_reply)
 			return -1;
