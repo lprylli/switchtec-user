@@ -22,7 +22,7 @@
  *
  */
 
-#ifdef __linux__
+#if defined( __linux__) && !LINUX_DRIVERLESS
 
 #include "../switchtec_priv.h"
 #include "../crc.h"

@@ -26,6 +26,7 @@
 #include "switchtec/gas.h"
 #include "../switchtec_priv.h"
 #include "switchtec/utils.h"
+#include "switchtec/errors.h"
 
 #include <errno.h>
 #include <stddef.h>
@@ -119,18 +120,23 @@ int gasop_cmd(struct switchtec_dev *dev, uint32_t cmd,
 	}
 
 	if (status == SWITCHTEC_MRPC_STATUS_INTERRUPTED) {
+	  fprintf(stderr, "mrpc_status_interrupted\n");
 		errno = ENXIO;
 		return -errno;
 	}
 
 	if (status != SWITCHTEC_MRPC_STATUS_DONE) {
-		errno = ENXIO;
+	  fprintf(stderr, "mrpc_status:0x%x\n", status);
+		errno = ERR_MPRC_UNSUPPORTED;
 		return -errno;
 	}
 
+	//fprintf(stderr, "gasop_cmd: 0x%08x: 0x%08x\n", status, mrpc->ret_value);
 	ret = __gas_read32(dev, &mrpc->ret_value);
-	if (ret)
+	if (ret) {
+	  fprintf(stderr, "mrpc_ret:0x%08x\n", ret);
 		errno = ret;
+	}
 
 	if(resp)
 		__memcpy_from_gas(dev, resp, &mrpc->output_data, resp_len);
@@ -246,8 +252,6 @@ int gasop_flash_part(struct switchtec_dev *dev,
 	struct sys_info_regs __gas *si = &dev->gas_map->sys_info;
 	uint32_t active_addr = -1;
 	int val;
-
-	memset(info, 0, sizeof(*info));
 
 	switch (part) {
 	case SWITCHTEC_FW_PART_ID_G3_IMG0:
