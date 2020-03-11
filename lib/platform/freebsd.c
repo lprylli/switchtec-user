@@ -35,11 +35,10 @@
 #include <sys/mman.h>
 
 #ifdef __FreeBSD__
-#include <sys/pciio.h>
+//#include <sys/pciio.h>
 #include <sys/sysctl.h>
-#else
-#include <pciaccess.h>
 #endif
+#include <pciaccess.h>
 
 #include <fcntl.h>
 #include <unistd.h>
