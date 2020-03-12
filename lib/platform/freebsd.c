@@ -264,7 +264,7 @@ static int sw_pci_list(struct pcisel matches[MAX_SW]) {
     struct pci_device *dev = pci_device_next(iter);
     if (!dev)
       break;
-    matches[i].pc_domain = dev->domain_16;
+    matches[i].pc_domain = 0;
     matches[i].pc_bus = dev->bus;
     matches[i].pc_dev = dev->dev;
     matches[i].pc_func = dev->func;
